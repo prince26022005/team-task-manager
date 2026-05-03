@@ -8,7 +8,7 @@ SECRET_KEY = 'django-insecure-key'
 
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 # ✅ INSTALLED APPS
 INSTALLED_APPS = [
@@ -110,3 +110,4 @@ SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
     'AUTH_HEADER_TYPES': ('Bearer',),
 }
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
