@@ -1,0 +1,181 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="min-h-screen bg-gradient-to-br from-indigo-100 via-purple-100 to-blue-100 p-6 lg:p-10">
+
+    <!-- HEADER -->
+    <div class="mb-8">
+        <h2 class="text-3xl font-bold text-gray-800">📁 {{ project.name }}</h2>
+        <p class="text-gray-600 mt-1">Manage tasks and team members</p>
+    </div>
+
+    <!-- TOP ACTION BAR -->
+    <div class="grid md:grid-cols-3 gap-4 mb-8">
+
+        <!-- ASSIGN USER -->
+        <select id="assignUser"
+            class="p-3 rounded-xl border bg-white shadow focus:outline-none">
+            {% for user in project.members.all %}
+            <option value="{{ user.id }}">{{ user.username }}</option>
+            {% endfor %}
+        </select>
+
+        <!-- ADD TASK -->
+        <button onclick="addTask({{ project.id }})"
+            class="bg-gradient-to-r from-indigo-500 to-purple-600 text-white px-4 py-3 rounded-xl shadow hover:scale-105 transition">
+            ➕ Add Task
+        </button>
+
+        <!-- ADD MEMBER -->
+        <div class="flex gap-2">
+            <input id="memberEmail" placeholder="Enter email"
+                class="flex-1 p-3 rounded-xl border shadow focus:outline-none">
+
+            <button onclick="addMember({{ project.id }})"
+                class="bg-green-500 hover:bg-green-600 text-white px-4 rounded-xl shadow">
+                Add Member
+            </button>
+        </div>
+
+    </div>
+
+    <!-- MEMBERS -->
+    <div class="flex flex-wrap gap-2 mb-8">
+        {% for user in project.members.all %}
+        <span class="bg-gradient-to-r from-indigo-500 to-purple-600 text-white px-3 py-1 text-xs rounded-full shadow">
+            {{ user.username }}
+        </span>
+        {% endfor %}
+    </div>
+
+    <!-- TASKS -->
+    <div class="space-y-4">
+
+        {% for task in tasks %}
+        <div class="bg-white/70 backdrop-blur-lg p-5 rounded-2xl shadow-lg flex justify-between items-center hover:shadow-xl transition">
+
+            <!-- LEFT -->
+            <div>
+                <h3 class="font-semibold text-lg text-gray-800">
+                    {{ task.title }}
+                </h3>
+
+                <p class="text-sm text-gray-500 mt-1">
+                    👤 {{ task.assigned_to.username }}
+                </p>
+
+                <p class="text-xs text-gray-500 mt-1">
+                    {{ task.priority|title }} • Due: {{ task.due_date|default:"—" }}
+                </p>
+            </div>
+
+            <!-- RIGHT -->
+            <div class="flex gap-3 items-center">
+
+                <!-- STATUS -->
+                <select onchange="updateStatus({{ task.id }}, this.value)"
+                    class="px-3 py-2 rounded-lg border text-sm">
+
+                    <option value="todo" {% if task.status == 'todo' %}selected{% endif %}>Todo</option>
+                    <option value="in_progress" {% if task.status == 'in_progress' %}selected{% endif %}>In Progress</option>
+                    <option value="done" {% if task.status == 'done' %}selected{% endif %}>Done</option>
+
+                </select>
+
+                <!-- DELETE -->
+                <button onclick="deleteTask({{ task.id }})"
+                    class="bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded-lg text-sm shadow">
+                    🗑
+                </button>
+
+            </div>
+
+        </div>
+        {% empty %}
+        <div class="text-center py-16 text-gray-400">
+            🚀 No tasks yet — create your first task!
+        </div>
+        {% endfor %}
+
+    </div>
+
+</div>
+
+<!-- SCRIPT -->
+<script>
+
+// ADD TASK
+function addTask(projectId) {
+    const title = prompt("Task name:");
+    if (!title) return;
+
+    const userId = document.getElementById("assignUser").value;
+    const dueDate = prompt("Due date (YYYY-MM-DD)");
+
+    fetch(`/projects/${projectId}/add-task/`, {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({
+            title: title,
+            user_id: userId,
+            due_date: dueDate
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.error) {
+            alert(data.error);
+        } else {
+            location.reload();
+        }
+    });
+}
+
+// DELETE TASK
+function deleteTask(id) {
+    if (!confirm("Delete task?")) return;
+
+    fetch(`/tasks/${id}/delete/`, {
+        method: "POST"
+    })
+    .then(() => location.reload());
+}
+
+// UPDATE STATUS
+function updateStatus(id, status) {
+    fetch(`/tasks/${id}/update/`, {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({status: status})
+    })
+    .then(() => location.reload());
+}
+
+// ADD MEMBER
+function addMember(projectId) {
+    const email = document.getElementById("memberEmail").value;
+
+    if (!email) {
+        alert("Email required ❌");
+        return;
+    }
+
+    fetch(`/projects/${projectId}/add-member/`, {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({email: email})
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.error) {
+            alert(data.error);
+        } else {
+            location.reload();
+        }
+    });
+}
+
+</script>
+
+{% endblock %}

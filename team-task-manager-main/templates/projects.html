@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+
+<div class="min-h-screen bg-gradient-to-br from-purple-100 via-indigo-100 to-blue-100 p-6 lg:p-10">
+
+    <!-- HEADER -->
+    <div class="flex flex-col md:flex-row justify-between md:items-center mb-10">
+
+        <div>
+            <h2 class="text-4xl font-bold text-gray-800">🚀 Project Portfolio</h2>
+            <p class="text-gray-600 mt-2">Manage and track your team's projects</p>
+        </div>
+
+        <button onclick="createProject()"
+            class="mt-5 md:mt-0 bg-gradient-to-r from-indigo-500 to-purple-600 text-white px-6 py-3 rounded-xl shadow-lg hover:scale-105 transition">
+            + Create Project
+        </button>
+
+    </div>
+
+    <!-- PROJECTS GRID -->
+    <div class="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
+
+        {% for project in projects %}
+        <div class="bg-white/70 backdrop-blur-lg border border-white/40 rounded-2xl p-5 shadow-lg hover:shadow-2xl hover:-translate-y-1 transition">
+
+            <!-- TOP -->
+            <div class="flex justify-between items-start mb-4">
+
+                <!-- CLICK AREA -->
+                <div onclick="window.location.href='/projects/{{ project.id }}/'"
+                     class="flex items-center gap-3 cursor-pointer">
+
+                    <div class="w-12 h-12 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-500 flex items-center justify-center text-white text-xl shadow">
+                        📁
+                    </div>
+
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-800">
+                            {{ project.name }}
+                        </h3>
+
+                        <p class="text-xs text-gray-500 mt-1">
+                            Updated {{ project.created_at|timesince }} ago
+                        </p>
+                    </div>
+
+                </div>
+
+                <!-- DELETE -->
+                <button onclick="deleteProject({{ project.id }})"
+                    class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-lg text-xs shadow">
+                    Delete
+                </button>
+
+            </div>
+
+            <!-- MEMBERS -->
+            <div class="flex justify-between items-center mb-3">
+
+                <div class="flex -space-x-2">
+                    {% for user in project.members.all|slice:":3" %}
+                        <div class="w-8 h-8 bg-gradient-to-r from-indigo-400 to-purple-500 rounded-full flex items-center justify-center text-xs font-bold text-white shadow">
+                            {{ user.username|first|upper }}
+                        </div>
+                    {% empty %}
+                        <span class="text-xs text-gray-400">No members</span>
+                    {% endfor %}
+
+                    {% if project.members.count > 3 %}
+                    <div class="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center text-xs">
+                        +{{ project.members.count|add:"-3" }}
+                    </div>
+                    {% endif %}
+                </div>
+
+                <span class="text-sm font-semibold text-gray-700">
+                    {{ project.progress|default:0 }}%
+                </span>
+
+            </div>
+
+            <!-- PROGRESS -->
+            <div class="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+                <div class="h-full bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full"
+                     style="width: {{ project.progress|default:0 }}%;">
+                </div>
+            </div>
+
+        </div>
+        {% empty %}
+        <div class="col-span-full text-center text-gray-500 py-16">
+            <p class="text-lg">🚀 No projects yet — create your first one!</p>
+        </div>
+        {% endfor %}
+
+    </div>
+
+</div>
+
+{% endblock %}
+
+{% block script %}
+<script>
+
+// CREATE PROJECT
+function createProject() {
+    const name = prompt("Enter project name:");
+    if (!name) return;
+
+    fetch("/projects/create/", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ name: name })
+    })
+    .then(res => res.json())
+    .then(() => {
+        alert("Project Created ✅");
+        location.reload();
+    });
+}
+
+// DELETE PROJECT
+function deleteProject(id) {
+    const confirmDelete = confirm("Delete this project?");
+    if (!confirmDelete) return;
+
+    fetch(`/projects/${id}/delete/`, {
+        method: "POST"
+    })
+    .then(res => res.json())
+    .then(() => {
+        alert("Deleted ✅");
+        location.reload();
+    });
+}
+
+</script>
+{% endblock %}
