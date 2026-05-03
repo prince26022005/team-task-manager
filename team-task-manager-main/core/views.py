@@ -7,6 +7,7 @@ from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 import json
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 
 from django.contrib.auth import get_user_model
