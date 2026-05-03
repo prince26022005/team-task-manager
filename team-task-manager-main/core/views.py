@@ -7,6 +7,7 @@ from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 import json
+from rest_framework.permissions import IsAuthenticated
 
 from django.contrib.auth import get_user_model
 User = get_user_model()
@@ -210,8 +211,8 @@ def delete_task(request, id):
 
 
 # ✅ UPDATE TASK
-@csrf_exempt
-@login_required
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def update_task_status(request, id):
     if request.method == "POST":
         data = json.loads(request.body)
