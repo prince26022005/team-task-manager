@@ -1,61 +1,47 @@
 {% extends "base.html" %}
 {% block content %}
 
-<div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-600 to-purple-600">
+<div class="min-h-screen bg-[#050505] flex items-center justify-center relative overflow-hidden p-4">
+    
+    <div class="absolute w-[500px] h-[500px] bg-indigo-600/20 rounded-full blur-[150px] -top-20 -left-20 animate-pulse"></div>
+    <div class="absolute w-[500px] h-[500px] bg-purple-600/20 rounded-full blur-[150px] bottom-0 right-0 animate-pulse delay-1000"></div>
 
-    <div class="w-full max-w-5xl flex bg-white rounded-2xl shadow-2xl overflow-hidden">
-
-        <!-- LEFT SIDE -->
-        <div class="hidden md:flex w-1/2 bg-gradient-to-br from-indigo-500 to-purple-600 text-white p-10 flex-col justify-center">
-            <h1 class="text-4xl font-bold mb-4">TeamFlow 🚀</h1>
-            <p class="text-lg opacity-90">
-                Manage projects, assign tasks, and track progress — all in one place.
-            </p>
-
-            <div class="mt-8 space-y-2 text-sm opacity-80">
-                <p>✔ Smart Task Tracking</p>
-                <p>✔ Team Collaboration</p>
-                <p>✔ Real-time Progress</p>
-            </div>
+    <div class="relative z-10 w-full max-w-md bg-white/5 backdrop-blur-2xl border border-white/10 p-8 md:p-10 rounded-3xl shadow-2xl">
+        
+        <div class="text-center mb-8">
+            <h2 class="text-3xl font-bold text-white tracking-tight">TWINS AI</h2>
+            <p class="text-slate-400 mt-2 text-sm">Sign in to your private workspace</p>
         </div>
 
-        <!-- RIGHT SIDE -->
-        <div class="w-full md:w-1/2 p-10">
+        <form method="POST" action="/login/" class="space-y-5">
+            {% csrf_token %}
 
-            <h2 class="text-3xl font-bold text-gray-800 mb-2">Welcome Back</h2>
-            <p class="text-gray-500 mb-6">Login to continue</p>
-
-            <!-- FORM -->
-            <form method="POST" action="/login/" class="space-y-4">
-                {% csrf_token %}
-
+            <div>
                 <input name="email" type="email" placeholder="Email address"
-                    class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
+                    class="w-full bg-white/5 border border-white/10 text-white px-4 py-4 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all placeholder:text-slate-500"
                     required>
+            </div>
 
+            <div>
                 <input name="password" type="password" placeholder="Password"
-                    class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
+                    class="w-full bg-white/5 border border-white/10 text-white px-4 py-4 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all placeholder:text-slate-500"
                     required>
+            </div>
 
-                <button type="submit"
-                    class="w-full bg-indigo-600 text-white py-3 rounded-lg font-semibold hover:bg-indigo-700 transition shadow-lg">
-                    Login →
-                </button>
-            </form>
+            <button type="submit"
+                class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-4 rounded-xl font-bold hover:scale-[1.02] transition-transform duration-300 shadow-xl shadow-indigo-500/20">
+                Secure Login →
+            </button>
+        </form>
 
-            <!-- ERROR -->
-            {% if error %}
-                <p class="text-red-500 mt-4 text-center">{{ error }}</p>
-            {% endif %}
+        {% if error %}
+            <p class="text-red-400 mt-4 text-center text-sm font-medium">{{ error }}</p>
+        {% endif %}
 
-            <!-- FOOTER -->
-            <p class="text-center mt-6 text-sm text-gray-600">
-                Don’t have an account?
-                <a href="/signup/" class="text-indigo-600 font-semibold hover:underline">Create one</a>
-            </p>
-
-        </div>
-
+        <p class="text-center mt-8 text-slate-500 text-sm">
+            Don’t have access? 
+            <a href="/signup/" class="text-indigo-400 font-semibold hover:underline">Request Invite</a>
+        </p>
     </div>
 
 </div>
