@@ -202,8 +202,8 @@ def delete_task(request, id):
     if request.method == "POST":
         task = get_object_or_404(Task, id=id, project__members=request.user)
 
-        if task.assigned_to != request.user:
-            return JsonResponse({"error": "Not allowed"}, status=403)
+        if request.user not in task.project.members.all():
+          return JsonResponse({"error": "Not allowed"}, status=403)
 
         task.delete()
         return JsonResponse({"message": "deleted"}, status=200)
@@ -216,15 +216,22 @@ def update_task_status(request, id):
     if request.method == "POST":
         data = json.loads(request.body)
 
-        task = get_object_or_404(Task, id=id, project__members=request.user)
+        task = get_object_or_404(Task, id=id)
 
-        if task.assigned_to != request.user:
+        # ✅ allow project members
+        if request.user not in task.project.members.all():
             return JsonResponse({"error": "Not allowed"}, status=403)
 
-        task.status = data.get("status")
+        status = data.get("status")
+
+        if status not in ["todo", "in_progress", "done"]:
+            return JsonResponse({"error": "Invalid status"}, status=400)
+
+        task.status = status
         task.save()
 
-        return JsonResponse({"message": "updated"}, status=200)
+        return JsonResponse({"message": "updated", "status": task.status}, status=200)
+
 
 
 # ✅ API TEST
