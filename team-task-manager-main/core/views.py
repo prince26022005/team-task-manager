@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from django.http import JsonResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.views.decorators.csrf import csrf_exempt
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login,logout
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 import json
@@ -215,27 +215,55 @@ def delete_task(request, id):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def update_task_status(request, id):
-    if request.method == "POST":
-        data = json.loads(request.body)
+    task = get_object_or_404(Task, id=id)
 
-        task = get_object_or_404(Task, id=id)
+    # ✅ allow project members
+    if request.user not in task.project.members.all():
+        return Response({"error": "Not allowed"}, status=403)
 
-        # ✅ allow project members
-        if request.user not in task.project.members.all():
-            return JsonResponse({"error": "Not allowed"}, status=403)
+    status = request.data.get("status")   # ✅ FIX
 
-        status = data.get("status")
+    if status not in ["todo", "in_progress", "done"]:
+        return Response({"error": "Invalid status"}, status=400)
 
-        if status not in ["todo", "in_progress", "done"]:
-            return JsonResponse({"error": "Invalid status"}, status=400)
+    task.status = status
+    task.save()
 
-        task.status = status
-        task.save()
-
-        return JsonResponse({"message": "updated", "status": task.status}, status=200)
-
+    return Response({
+        "message": "updated",
+        "status": task.status
+    }, status=200)
 
 
 # ✅ API TEST
 def home(request):
     return JsonResponse({"message": "API working 🚀"})
+
+@csrf_exempt
+def login_view(request):
+    if request.method == "POST":
+
+        # ✅ logout previous user
+        if request.user.is_authenticated:
+            logout(request)
+
+        email = request.POST.get("email")
+        password = request.POST.get("password")
+
+        try:
+            user_obj = User.objects.get(email=email)
+        except User.DoesNotExist:
+            return render(request, "login.html", {"error": "Invalid credentials"})
+
+        user = authenticate(
+            username=user_obj.username,
+            password=password
+        )
+
+        if user:
+            login(request, user)
+            return redirect("/dashboard/")
+
+        return render(request, "login.html", {"error": "Invalid credentials"})
+
+    return render(request, "login.html")

@@ -109,13 +109,25 @@
         fetch(`/tasks/${id}/delete/`, { method: "POST" }).then(() => location.reload());
     }
 
-    function updateStatus(id, status) {
-        fetch(`/tasks/${id}/update/`, {
-            method: "POST",
-            headers: {"Content-Type": "application/json"},
-            body: JSON.stringify({ status })
-        }).then(() => location.reload());
-    }
+  function updateStatus(id, status) {
+    fetch(`/tasks/${id}/update/`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ status: status })
+    })
+    .then(res => res.json())
+    .then(data => {
+        console.log("UPDATE RESPONSE:", data);
+
+        if (data.error) {
+            alert(data.error);
+        } else {
+            location.reload();
+        }
+    });
+}
 
     function addMember(projectId) {
         const email = document.getElementById("memberEmail").value;
