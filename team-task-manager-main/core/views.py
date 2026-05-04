@@ -3,12 +3,10 @@ from rest_framework.response import Response
 from django.http import JsonResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.views.decorators.csrf import csrf_exempt
-from django.contrib.auth import authenticate, login,logout
+from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 import json
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
 
 from django.contrib.auth import get_user_model
 User = get_user_model()
@@ -205,65 +203,37 @@ def delete_task(request, id):
         task = get_object_or_404(Task, id=id, project__members=request.user)
 
         if request.user not in task.project.members.all():
-          return JsonResponse({"error": "Not allowed"}, status=403)
+         return JsonResponse({"error": "Not allowed"}, status=403)
 
         task.delete()
         return JsonResponse({"message": "deleted"}, status=200)
 
 
 # ✅ UPDATE TASK
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
+# ✅ UPDATE TASK (FIXED)
+@csrf_exempt
+@login_required
 def update_task_status(request, id):
-    task = get_object_or_404(Task, id=id)
+    if request.method == "POST":
+        data = json.loads(request.body)
 
-    # ✅ allow project members
-    if request.user not in task.project.members.all():
-        return Response({"error": "Not allowed"}, status=403)
+        task = get_object_or_404(Task, id=id)
 
-    status = request.data.get("status")   # ✅ FIX
+        # ✅ allow project members
+        if request.user not in task.project.members.all():
+            return JsonResponse({"error": "Not allowed"}, status=403)
 
-    if status not in ["todo", "in_progress", "done"]:
-        return Response({"error": "Invalid status"}, status=400)
+        status = data.get("status")
 
-    task.status = status
-    task.save()
+        if status not in ["todo", "in_progress", "done"]:
+            return JsonResponse({"error": "Invalid status"}, status=400)
 
-    return Response({
-        "message": "updated",
-        "status": task.status
-    }, status=200)
+        task.status = status
+        task.save()
+
+        return JsonResponse({"message": "updated", "status": task.status}, status=200)
 
 
 # ✅ API TEST
 def home(request):
     return JsonResponse({"message": "API working 🚀"})
-
-@csrf_exempt
-def login_view(request):
-    if request.method == "POST":
-
-        # ✅ logout previous user
-        if request.user.is_authenticated:
-            logout(request)
-
-        email = request.POST.get("email")
-        password = request.POST.get("password")
-
-        try:
-            user_obj = User.objects.get(email=email)
-        except User.DoesNotExist:
-            return render(request, "login.html", {"error": "Invalid credentials"})
-
-        user = authenticate(
-            username=user_obj.username,
-            password=password
-        )
-
-        if user:
-            login(request, user)
-            return redirect("/dashboard/")
-
-        return render(request, "login.html", {"error": "Invalid credentials"})
-
-    return render(request, "login.html")
