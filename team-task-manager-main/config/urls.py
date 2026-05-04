@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.urls import path, include
 from core.views import login_page
-from core.views import  dashboard
+from core.views import  dashboard, signup_page
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -9,6 +9,7 @@ urlpatterns = [
 
     path('', login_page),
     path('dashboard/', dashboard),
+    path('signup/', signup_page)
     
 
 ]
