@@ -9,6 +9,6 @@ urlpatterns = [
 
     path('', login_page),
     path('dashboard/', dashboard),
-    path('', include('core.urls')), 
+    
 
 ]
