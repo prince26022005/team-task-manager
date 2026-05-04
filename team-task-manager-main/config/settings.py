@@ -61,6 +61,7 @@ WSGI_APPLICATION = 'config.wsgi.application'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 # ✅ DATABASE
 
+
 # ✅ PASSWORD VALIDATION
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},

@@ -29,11 +29,4 @@ urlpatterns = [
     path('projects/<int:id>/add-member/', views.add_member),
     path('projects/<int:id>/delete/', views.delete_project),
     path('projects/<int:id>/add-task/', views.add_task),
-    path('api/login/', api_login),
-    path('api/dashboard/', api_dashboard),
-    path('api/tasks/<int:id>/update/', update_task_status),
-    path('api/projects/<int:id>/add-task/', add_task),
-    path('api/projects/<int:id>/add-member/', add_member),
-    path('api/tasks/<int:id>/update/', update_task_status),
-    path('api/tasks/<int:id>/delete/', delete_task),
 ]

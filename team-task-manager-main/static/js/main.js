@@ -1,30 +1,26 @@
-axios.interceptors.request.use(function (config) {
-    const token = localStorage.getItem("token");
-
-    if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-    }
-
-    return config;
-});
 function login(event) {
     event.preventDefault();
 
-    const email = document.querySelector('input[name="email"]').value;
-    const password = document.querySelector('input[name="password"]').value;
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
 
     axios.post("/api/login/", {
-        email: email,
+        username: email,
         password: password
     })
     .then(res => {
 
+        // ✅ SAVE TOKEN
         localStorage.setItem("token", res.data.access);
 
+        alert("Login Success ✅");
+
+        // ✅ FORCE REDIRECT
         window.location.href = "/dashboard/";
 
     })
-    .catch(() => {
+    .catch(err => {
         alert("Invalid credentials ❌");
     });
 }
+

@@ -7,8 +7,6 @@ from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 import json
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
 
 from django.contrib.auth import get_user_model
 User = get_user_model()
@@ -63,8 +61,7 @@ def signup_page(request):
 
 
 # ✅ DASHBOARD
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
+@login_required
 def dashboard(request):
     tasks = Task.objects.filter(assigned_to=request.user)
 
@@ -86,8 +83,7 @@ def dashboard(request):
 
 
 # ✅ PROJECT LIST
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
+@login_required
 def projects_page(request):
     projects = Project.objects.filter(members=request.user)
 
@@ -100,8 +96,7 @@ def projects_page(request):
 
 
 # ✅ PROJECT DETAIL
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
+@login_required
 def project_detail(request, id):
     project = get_object_or_404(Project, id=id)
 
@@ -118,8 +113,7 @@ def project_detail(request, id):
 
 # ✅ CREATE PROJECT
 @csrf_exempt
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
+@login_required
 def create_project(request):
     if request.method == "POST":
         data = json.loads(request.body)
@@ -135,8 +129,7 @@ def create_project(request):
         return JsonResponse({"message": "created"}, status=201)
 # ✅ DELETE PROJECT (ADMIN ONLY)
 @csrf_exempt
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
+@login_required
 def delete_project(request, id):
     if request.method == "POST":
         project = get_object_or_404(Project, id=id)
@@ -148,8 +141,7 @@ def delete_project(request, id):
         return JsonResponse({"message": "deleted"}, status=200)
 # ✅ ADD MEMBER (ADMIN ONLY)
 @csrf_exempt
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
+@login_required
 def add_member(request, id):
     if request.method == "POST":
         data = json.loads(request.body)
@@ -168,8 +160,7 @@ def add_member(request, id):
             return JsonResponse({"error": "user not found"}, status=404)
 # ✅ ADD TASK
 @csrf_exempt
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
+@login_required
 def add_task(request, id):
     if request.method == "POST":
         data = json.loads(request.body)
@@ -206,8 +197,7 @@ def add_task(request, id):
 
 # ✅ DELETE TASK
 @csrf_exempt
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
+@login_required
 def delete_task(request, id):
     if request.method == "POST":
         task = get_object_or_404(Task, id=id, project__members=request.user)
@@ -222,8 +212,7 @@ def delete_task(request, id):
 # ✅ UPDATE TASK
 # ✅ UPDATE TASK (FIXED)
 @csrf_exempt
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
+@login_required
 def update_task_status(request, id):
     if request.method == "POST":
         data = json.loads(request.body)
@@ -231,67 +220,20 @@ def update_task_status(request, id):
         task = get_object_or_404(Task, id=id)
 
         # ✅ allow project members
-    if request.user not in task.project.members.all():
-        return Response({"error": "Not allowed"}, status=403)
+        if request.user not in task.project.members.all():
+            return JsonResponse({"error": "Not allowed"}, status=403)
 
-    status = request.data.get("status")
+        status = data.get("status")
 
-    if status not in ["todo", "in_progress", "done"]:
-        return Response({"error": "Invalid status"}, status=400)
+        if status not in ["todo", "in_progress", "done"]:
+            return JsonResponse({"error": "Invalid status"}, status=400)
 
-    task.status = status
-    task.save()
+        task.status = status
+        task.save()
 
-    return Response({"message": "updated", "status": task.status})
+        return JsonResponse({"message": "updated", "status": task.status}, status=200)
 
 
 # ✅ API TEST
 def home(request):
     return JsonResponse({"message": "API working 🚀"})
-
-from rest_framework.decorators import api_view
-from rest_framework.response import Response
-from rest_framework_simplejwt.tokens import RefreshToken
-from django.contrib.auth import authenticate
-from django.contrib.auth import get_user_model
-
-User = get_user_model()
-
-@api_view(['POST'])
-def api_login(request):
-    email = request.data.get("email")
-    password = request.data.get("password")
-
-    try:
-        user_obj = User.objects.get(email=email)
-    except User.DoesNotExist:
-        return Response({"error": "Invalid credentials"}, status=400)
-
-    user = authenticate(username=user_obj.username, password=password)
-
-    if user is None:
-        return Response({"error": "Invalid credentials"}, status=400)
-
-    refresh = RefreshToken.for_user(user)
-
-    return Response({
-        "access": str(refresh.access_token),
-        "refresh": str(refresh),
-        "username": user.username
-    })
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
-
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def api_dashboard(request):
-    user = request.user
-
-    tasks = Task.objects.filter(assigned_to=user)
-
-    return Response({
-        "username": user.username,
-        "total_tasks": tasks.count(),
-        "completed": tasks.filter(status="done").count(),
-        "pending": tasks.filter(status="todo").count(),
-    })
