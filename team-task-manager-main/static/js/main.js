@@ -1,11 +1,11 @@
 function login(event) {
     event.preventDefault();
 
-    const email = document.getElementById("email").value;
-    const password = document.getElementById("password").value;
+    const email = document.querySelector('input[name="email"]').value;
+    const password = document.querySelector('input[name="password"]').value;
 
     axios.post("/api/login/", {
-        username: email,
+        email: email,
         password: password
     })
     .then(res => {
@@ -13,14 +13,10 @@ function login(event) {
         // ✅ SAVE TOKEN
         localStorage.setItem("token", res.data.access);
 
-        alert("Login Success ✅");
-
-        // ✅ FORCE REDIRECT
         window.location.href = "/dashboard/";
 
     })
-    .catch(err => {
+    .catch(() => {
         alert("Invalid credentials ❌");
     });
 }
-
