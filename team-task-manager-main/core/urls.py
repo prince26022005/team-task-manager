@@ -1,32 +1,15 @@
 from django.urls import path
-from .views import *
-from .views import add_task
 from . import views
 
 urlpatterns = [
-    path('', login_page),
-    path('signup/', signup_page),
-
-    path('login/', login_view),
-    path('register/', register),
-
-    path('dashboard/', dashboard),
-
-    path('projects/', projects_page),
-    path('projects/<int:id>/', project_detail),
-
-    path('projects/create/', create_project),
-    path('projects/<int:id>/delete/', delete_project),
-    path('projects/<int:id>/add-member/', add_member),
-
-    path('projects/<int:id>/add-task/', add_task),
-
-    path('tasks/<int:id>/update/', update_task_status),
-    path('tasks/<int:id>/delete/', delete_task),
-
-    path('api/', home),
-
-    path('projects/<int:id>/add-member/', views.add_member),
-    path('projects/<int:id>/delete/', views.delete_project),
-    path('projects/<int:id>/add-task/', views.add_task),
+    path('', views.projects_page, name='projects_page'),
+    path('create/', views.create_project, name='create_project'),
+    path('<int:id>/', views.project_detail, name='project_detail'),
+    path('<int:id>/delete/', views.delete_project, name='delete_project'),
+    path('<int:id>/add-member/', views.add_member, name='add_member'),
+    path('<int:id>/add-task/', views.add_task, name='add_task'),
+    
+    # Tasks ke liye alag path
+    path('tasks/<int:id>/update/', views.update_task_status, name='update_task'),
+    path('tasks/<int:id>/delete/', views.delete_task, name='delete_task'),
 ]
