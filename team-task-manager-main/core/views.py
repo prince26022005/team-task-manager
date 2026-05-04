@@ -231,26 +231,31 @@ def update_task_status(request, id):
         task = get_object_or_404(Task, id=id)
 
         # ✅ allow project members
-        if request.user not in task.project.members.all():
-            return JsonResponse({"error": "Not allowed"}, status=403)
+    if request.user not in task.project.members.all():
+        return Response({"error": "Not allowed"}, status=403)
 
-        status = data.get("status")
+    status = request.data.get("status")
 
-        if status not in ["todo", "in_progress", "done"]:
-            return JsonResponse({"error": "Invalid status"}, status=400)
+    if status not in ["todo", "in_progress", "done"]:
+        return Response({"error": "Invalid status"}, status=400)
 
-        task.status = status
-        task.save()
+    task.status = status
+    task.save()
 
-        return JsonResponse({"message": "updated", "status": task.status}, status=200)
+    return Response({"message": "updated", "status": task.status})
 
 
 # ✅ API TEST
 def home(request):
     return JsonResponse({"message": "API working 🚀"})
 
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 
 @api_view(['POST'])
 def api_login(request):
@@ -271,5 +276,22 @@ def api_login(request):
 
     return Response({
         "access": str(refresh.access_token),
-        "refresh": str(refresh)
+        "refresh": str(refresh),
+        "username": user.username
+    })
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def api_dashboard(request):
+    user = request.user
+
+    tasks = Task.objects.filter(assigned_to=user)
+
+    return Response({
+        "username": user.username,
+        "total_tasks": tasks.count(),
+        "completed": tasks.filter(status="done").count(),
+        "pending": tasks.filter(status="todo").count(),
     })

@@ -1,3 +1,12 @@
+axios.interceptors.request.use(function (config) {
+    const token = localStorage.getItem("token");
+
+    if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+    }
+
+    return config;
+});
 function login(event) {
     event.preventDefault();
 
@@ -10,7 +19,6 @@ function login(event) {
     })
     .then(res => {
 
-        // ✅ SAVE TOKEN
         localStorage.setItem("token", res.data.access);
 
         window.location.href = "/dashboard/";

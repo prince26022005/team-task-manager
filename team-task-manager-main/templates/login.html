@@ -13,7 +13,7 @@
             <p class="text-slate-400 mt-2 text-sm">Sign in to your private workspace</p>
         </div>
 
-        <form method="POST" action="/login/" class="space-y-5">
+        <form onsubmit="login(event)">
             {% csrf_token %}
 
             <div>

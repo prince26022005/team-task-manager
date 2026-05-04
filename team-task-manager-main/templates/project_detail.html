@@ -88,53 +88,114 @@
 
 {% endblock %}
 
+
 {% block script %}
 <script>
-    // Logic wahi hai, UI update kar diya hai
-    function addTask(projectId) {
-        const title = prompt("Task name:");
-        if (!title) return;
-        const userId = document.getElementById("assignUser").value;
-        const dueDate = prompt("Due date (YYYY-MM-DD)");
 
-        fetch(`/projects/${projectId}/add-task/`, {
-            method: "POST",
-            headers: {"Content-Type": "application/json"},
-            body: JSON.stringify({ title, user_id: userId, due_date: dueDate })
-        }).then(() => location.reload());
-    }
+// 🔥 TOKEN HELPER
+function getToken() {
+    return localStorage.getItem("token");
+}
 
-    function deleteTask(id) {
-        if (!confirm("Delete task?")) return;
-        fetch(`/tasks/${id}/delete/`, { method: "POST" }).then(() => location.reload());
-    }
+// 🔥 ADD TASK
+function addTask(projectId) {
+    const title = prompt("Task name:");
+    if (!title) return;
 
-function updateStatus(id, status) {
-    const token = localStorage.getItem("token");
+    const userId = document.getElementById("assignUser").value;
+    const dueDate = prompt("Due date (YYYY-MM-DD)");
 
-    fetch(`/tasks/${id}/update/`, {
+    fetch(`/api/projects/${projectId}/add-task/`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`
+            "Authorization": `Bearer ${getToken()}`
+        },
+        body: JSON.stringify({
+            title: title,
+            user_id: userId,
+            due_date: dueDate
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+        console.log("ADD TASK:", data);
+
+        if (data.error) {
+            alert(data.error);
+        } else {
+            location.reload();
+        }
+    });
+}
+
+// 🔥 DELETE TASK
+function deleteTask(id) {
+    if (!confirm("Delete task?")) return;
+
+    fetch(`/api/tasks/${id}/delete/`, {
+        method: "POST",
+        headers: {
+            "Authorization": `Bearer ${getToken()}`
+        }
+    })
+    .then(res => res.json())
+    .then(data => {
+        console.log("DELETE:", data);
+        location.reload();
+    });
+}
+
+// 🔥 UPDATE STATUS (FIXED)
+function updateStatus(id, status) {
+    fetch(`/api/tasks/${id}/update/`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${getToken()}`
         },
         body: JSON.stringify({ status: status })
     })
     .then(res => res.json())
     .then(data => {
-        console.log(data);
-        location.reload();
+        console.log("UPDATE:", data);
+
+        if (data.error) {
+            alert(data.error);
+        } else {
+            location.reload();
+        }
     });
 }
 
-    function addMember(projectId) {
-        const email = document.getElementById("memberEmail").value;
-        if (!email) return;
-        fetch(`/projects/${projectId}/add-member/`, {
-            method: "POST",
-            headers: {"Content-Type": "application/json"},
-            body: JSON.stringify({ email })
-        }).then(() => location.reload());
+// 🔥 ADD MEMBER
+function addMember(projectId) {
+    const email = document.getElementById("memberEmail").value;
+
+    if (!email) {
+        alert("Email required ❌");
+        return;
     }
+
+    fetch(`/api/projects/${projectId}/add-member/`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${getToken()}`
+        },
+        body: JSON.stringify({ email: email })
+    })
+    .then(res => res.json())
+    .then(data => {
+        console.log("ADD MEMBER:", data);
+
+        if (data.error) {
+            alert(data.error);
+        } else {
+            location.reload();
+        }
+    });
+}
+
 </script>
 {% endblock %}
