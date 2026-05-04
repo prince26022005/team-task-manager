@@ -59,7 +59,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'config.wsgi.application'
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
 # ✅ DATABASE
 
 
