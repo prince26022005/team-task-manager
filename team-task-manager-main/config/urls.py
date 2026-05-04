@@ -10,6 +10,7 @@ urlpatterns = [
     path('', login_page),
     path('dashboard/', dashboard),
     path('signup/', signup_page)
+    path('login/', login_view),
     
 
 ]
