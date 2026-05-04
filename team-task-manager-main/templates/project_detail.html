@@ -1,199 +1,146 @@
 {% extends "base.html" %}
-
 {% block content %}
 
-<div class="min-h-screen bg-gradient-to-br from-indigo-100 via-purple-100 to-blue-100 p-6 lg:p-10">
+<div class="min-h-screen bg-midnight p-6 lg:p-10">
 
-    <!-- HEADER -->
-    <div class="mb-8">
-        <h2 class="text-3xl font-bold text-gray-800">📁 {{ project.name }}</h2>
-        <p class="text-gray-600 mt-1">Manage tasks and team members</p>
+    <div class="mb-10">
+        <h2 class="text-4xl font-bold text-white tracking-tight">📁 {{ project.name }}</h2>
+        <p class="text-gray-500 mt-2">Manage your squad's tasks and workflow execution</p>
     </div>
 
-    <!-- TOP ACTION BAR -->
-    <div class="grid md:grid-cols-3 gap-4 mb-8">
+    <div class="grid md:grid-cols-3 gap-6 mb-10">
 
-        <!-- ASSIGN USER -->
-        <select id="assignUser"
-            class="p-3 rounded-xl border bg-white shadow focus:outline-none">
-            {% for user in project.members.all %}
-            <option value="{{ user.id }}">{{ user.username }}</option>
-            {% endfor %}
-        </select>
-
-        <!-- ADD TASK -->
-        <button onclick="addTask({{ project.id }})"
-            class="bg-gradient-to-r from-indigo-500 to-purple-600 text-white px-4 py-3 rounded-xl shadow hover:scale-105 transition">
-            ➕ Add Task
-        </button>
-
-        <!-- ADD MEMBER -->
-        <div class="flex gap-2">
-            <input id="memberEmail" placeholder="Enter email"
-                class="flex-1 p-3 rounded-xl border shadow focus:outline-none">
-
-            <button onclick="addMember({{ project.id }})"
-                class="bg-green-500 hover:bg-green-600 text-white px-4 rounded-xl shadow">
-                Add Member
-            </button>
+        <div class="glass-card p-2 rounded-xl border border-white/10">
+            <select id="assignUser" class="w-full bg-transparent text-white p-2 outline-none">
+                {% for user in project.members.all %}
+                <option value="{{ user.id }}" class="bg-midnight">{{ user.username }}</option>
+                {% endfor %}
+            </select>
         </div>
 
+        <button onclick="addTask({{ project.id }})"
+            class="bg-electric hover:bg-blue-600 text-white font-semibold px-4 py-3 rounded-xl shadow-lg hover:shadow-[0_0_20px_rgba(0,122,255,0.3)] transition-all">
+            + Add New Task
+        </button>
+
+        <div class="flex gap-2 glass-card p-1 rounded-xl border border-white/10">
+            <input id="memberEmail" placeholder="user@example.com"
+                class="flex-1 bg-transparent text-white px-4 outline-none placeholder:text-gray-600">
+            <button onclick="addMember({{ project.id }})"
+                class="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-lg transition">
+                Invite
+            </button>
+        </div>
     </div>
 
-    <!-- MEMBERS -->
-    <div class="flex flex-wrap gap-2 mb-8">
+    <div class="flex flex-wrap gap-3 mb-10">
         {% for user in project.members.all %}
-        <span class="bg-gradient-to-r from-indigo-500 to-purple-600 text-white px-3 py-1 text-xs rounded-full shadow">
+        <span class="px-4 py-1 text-xs rounded-full border border-electric/30 bg-electric/10 text-electric font-semibold uppercase tracking-wider">
             {{ user.username }}
         </span>
         {% endfor %}
     </div>
 
-    <!-- TASKS -->
     <div class="space-y-4">
-
         {% for task in tasks %}
-        <div class="bg-white/70 backdrop-blur-lg p-5 rounded-2xl shadow-lg flex justify-between items-center hover:shadow-xl transition">
-
-            <!-- LEFT -->
+        <div class="glass-card group flex justify-between items-center p-6 rounded-2xl border border-white/5 hover:border-white/10 transition-all duration-300">
+            
             <div>
-                <h3 class="font-semibold text-lg text-gray-800">
+                <h3 class="font-bold text-lg text-white group-hover:text-electric transition-colors">
                     {{ task.title }}
                 </h3>
-
-                <p class="text-sm text-gray-500 mt-1">
-                    👤 {{ task.assigned_to.username }}
-                </p>
-
-                <p class="text-xs text-gray-500 mt-1">
-                    {{ task.priority|title }} • Due: {{ task.due_date|default:"—" }}
-                </p>
+                <div class="flex gap-4 mt-2">
+                    <p class="text-xs text-gray-500 flex items-center gap-1">
+                        <span class="opacity-50">👤</span> {{ task.assigned_to.username }}
+                    </p>
+                    <p class="text-xs text-gray-500 flex items-center gap-1">
+                        <span class="opacity-50">📅</span> {{ task.due_date|default:"No deadline" }}
+                    </p>
+                    <p class="text-xs uppercase text-neon/70 font-mono">
+                        {{ task.priority }}
+                    </p>
+                </div>
             </div>
 
-            <!-- RIGHT -->
-            <div class="flex gap-3 items-center">
-
-                <!-- STATUS -->
+            <div class="flex gap-4 items-center">
                 <select onchange="updateStatus({{ task.id }}, this.value)"
-                    class="px-3 py-2 rounded-lg border text-sm">
-
+                    class="bg-midnight border border-white/10 text-white px-3 py-2 rounded-lg text-sm outline-none focus:border-electric transition">
                     <option value="todo" {% if task.status == 'todo' %}selected{% endif %}>Todo</option>
                     <option value="in_progress" {% if task.status == 'in_progress' %}selected{% endif %}>In Progress</option>
                     <option value="done" {% if task.status == 'done' %}selected{% endif %}>Done</option>
-
                 </select>
 
-                <!-- DELETE -->
                 <button onclick="deleteTask({{ task.id }})"
-                    class="bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded-lg text-sm shadow">
-                    🗑
+                    class="text-red-500/50 hover:text-red-500 transition-colors p-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
                 </button>
-
             </div>
-
         </div>
         {% empty %}
-        <div class="text-center py-16 text-gray-400">
-            🚀 No tasks yet — create your first task!
+        <div class="text-center py-20 glass-card border border-white/5">
+            <p class="text-gray-500 text-lg italic">The project nexus is empty. Add a task to start!</p>
         </div>
         {% endfor %}
-
     </div>
 
 </div>
 
-<!-- SCRIPT -->
+{% endblock %}
+
+{% block script %}
 <script>
 function getCSRFToken() {
-    return document.cookie
-        .split('; ')
-        .find(row => row.startsWith('csrftoken='))
-        ?.split('=')[1];
+    const cookies = document.cookie.split('; ');
+    const cookie = cookies.find(row => row.startsWith('csrftoken='));
+    return cookie ? cookie.split('=')[1] : null;
 }
-// ADD TASK
+
+// Global Headers for all requests
+const headers = { 
+    "Content-Type": "application/json",
+    "X-CSRFToken": getCSRFToken() 
+};
+
 function addTask(projectId) {
     const title = prompt("Task name:");
     if (!title) return;
-
     const userId = document.getElementById("assignUser").value;
     const dueDate = prompt("Due date (YYYY-MM-DD)");
 
     fetch(`/projects/${projectId}/add-task/`, {
         method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({
-            title: title,
-            user_id: userId,
-            due_date: dueDate
-        })
-    })
-    .then(res => res.json())
-    .then(data => {
-        if (data.error) {
-            alert(data.error);
-        } else {
-            location.reload();
-        }
-    });
+        headers: headers,
+        body: JSON.stringify({ title, user_id: userId, due_date: dueDate })
+    }).then(() => location.reload());
 }
 
-// DELETE TASK
 function deleteTask(id) {
     if (!confirm("Delete task?")) return;
-
     fetch(`/tasks/${id}/delete/`, {
-        method: "POST"
-    })
-    .then(() => location.reload());
+        method: "POST",
+        headers: headers
+    }).then(() => location.reload());
 }
 
-// UPDATE STATUS
-// UPDATE STATUS (FIXED)
 function updateStatus(id, status) {
     fetch(`/tasks/${id}/update/`, {
         method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            "X-CSRFToken": getCSRFToken()   // ✅ IMPORTANT
-        },
-        body: JSON.stringify({
-            status: status.toLowerCase()   // ✅ SAFETY FIX
-        })
-    })
-    .then(res => res.json())
-    .then(data => {
-        console.log("Updated:", data);
-        location.reload();
-    })
-    .catch(err => {
-        console.error("Error:", err);
-    });
+        headers: headers,
+        body: JSON.stringify({ status: status.toLowerCase() })
+    }).then(() => location.reload());
 }
 
-// ADD MEMBER
 function addMember(projectId) {
     const email = document.getElementById("memberEmail").value;
-
-    if (!email) {
-        alert("Email required ❌");
-        return;
-    }
+    if (!email) return;
 
     fetch(`/projects/${projectId}/add-member/`, {
         method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({email: email})
-    })
-    .then(res => res.json())
-    .then(data => {
-        if (data.error) {
-            alert(data.error);
-        } else {
-            location.reload();
-        }
-    });
+        headers: headers,
+        body: JSON.stringify({ email: email })
+    }).then(() => location.reload());
 }
-
 </script>
-
 {% endblock %}
