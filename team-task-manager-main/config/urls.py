@@ -4,13 +4,10 @@ from core.views import login_page, dashboard, signup_page, login_view
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    
-    # Ye home/auth pages hain
+    path('api/', include('core.urls')),
     path('', login_page),
     path('dashboard/', dashboard),
     path('signup/', signup_page),
     path('login/', login_view),
-    
-    # Sirf yaha 'projects/' likho, baaki kahin nahi
     path('projects/', include('core.urls')),
 ]
